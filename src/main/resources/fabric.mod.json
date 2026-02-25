@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "beparticle",
+	"version": "${version}",
+	"name": "BEParticle",
+	"description": "Bedrock Edition particle engine for Minecraft Java Edition. Parses Bedrock particle JSON and renders Billboard particles client-side.",
+	"authors": [
+		"NaKeR",
+		"EaseCation"
+	],
+	"contact": {
+		"homepage": "https://github.com/EaseCation/BEParticle",
+		"sources": "https://github.com/EaseCation/BEParticle"
+	},
+	"license": "CC0-1.0",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			{
+				"value": "net.easecation.beparticle.BedrockParticleLib",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		{
+			"config": "beparticle.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.0",
+		"minecraft": "${minecraft_dep}",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}

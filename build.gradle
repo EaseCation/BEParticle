@@ -1,0 +1,117 @@
+plugins {
+	id 'fabric-loom' version '1.13.6'
+	id 'maven-publish'
+	id 'org.jetbrains.kotlin.jvm' version '2.1.10'
+	id 'dev.kikugie.stonecutter'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+def mcVersion = stonecutter.current.project
+def versionConfig = [
+	'1.21.5': [
+		yarn: '1.21.5+build.1',
+		fabricApi: '0.119.5+1.21.5',
+	],
+	'1.21.6': [
+		yarn: '1.21.6+build.1',
+		fabricApi: '0.125.2+1.21.6',
+	],
+	'1.21.7': [
+		yarn: '1.21.7+build.1',
+		fabricApi: '0.128.1+1.21.7',
+	],
+	'1.21.8': [
+		yarn: '1.21.8+build.1',
+		fabricApi: '0.134.0+1.21.8',
+	],
+	'1.21.9': [
+		yarn: '1.21.9+build.1',
+		fabricApi: '0.134.1+1.21.9',
+	],
+	'1.21.10': [
+		yarn: '1.21.10+build.3',
+		fabricApi: '0.138.4+1.21.10',
+	],
+	'1.21.11': [
+		yarn: '1.21.11+build.4',
+		fabricApi: '0.141.3+1.21.11',
+	]
+][mcVersion]
+
+project.ext.minecraft_version = mcVersion
+project.ext.yarn_mappings = versionConfig.yarn
+project.ext.fabric_version = versionConfig.fabricApi
+project.ext.minecraft_dep = "~1.21-"
+
+base {
+	archivesName = "${project.archives_base_name}-mc${mcVersion}"
+}
+
+repositories {
+	maven { url "https://repo.unnamed.team/repository/unnamed-public/" }
+}
+
+dependencies {
+	minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+	// MoLang engine
+	api("team.unnamed:mocha:3.0.1")
+	if (stonecutter.current.isActive) {
+		include("team.unnamed:mocha:3.0.1")
+	}
+
+	// GSON for JSON parsing
+	implementation("com.google.code.gson:gson:2.11.0")
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version,
+			"minecraft_dep": project.minecraft_dep
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+	compilerOptions {
+		jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+	}
+}
+
+java {
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	inputs.property "archivesName", project.base.archivesName
+
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+if (stonecutter.current.isActive) {
+	publishing {
+		publications {
+			create("mavenJava", MavenPublication) {
+				artifactId = project.archives_base_name
+				from components.java
+			}
+		}
+	}
+}
