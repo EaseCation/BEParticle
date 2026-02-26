@@ -278,9 +278,9 @@ Output JARs: `build/libs/beparticle-mc{version}-1.0.0.jar`
 
 ## License
 
-[CC0-1.0](LICENSE) — Public Domain
+[MIT](LICENSE)
 
 ## Credits
 
-- **Authors:** NaKeR, [EaseCation](https://github.com/EaseCation)
+- **Authors:** [EaseCation](https://github.com/EaseCation)
 - **MoLang Engine:** [mocha](https://github.com/unnamed/mocha) by team.unnamed

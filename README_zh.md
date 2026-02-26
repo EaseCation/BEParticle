@@ -294,9 +294,9 @@ ParticleManager.tick()
 
 ## 许可证
 
-[CC0-1.0](LICENSE) — 公共领域
+[MIT](LICENSE) — 公共领域
 
 ## 致谢
 
-- **作者：** NaKeR, [EaseCation](https://github.com/EaseCation)
+- **作者：** [EaseCation](https://github.com/EaseCation)
 - **MoLang 引擎：** [mocha](https://github.com/unnamed/mocha) by team.unnamed
