@@ -52,11 +52,13 @@ class ParticleEmitter(
 
     // Reusable vars map to reduce GC pressure
     private val reusableVars = mutableMapOf<String, Float>()
+    // Reusable particle vars map (avoids toMutableMap() per-particle per-tick)
+    private val reusableParticleVars = mutableMapOf<String, Float>()
 
     val particleCount: Int get() = particles.size
     val isDead: Boolean get() = !active && particles.isEmpty()
 
-    fun getParticles(): List<Particle> = ArrayList(particles)
+    fun getParticles(): List<Particle> = particles
 
     /**
      * Kill up to [count] particles, preferring those farthest from camera.
@@ -369,8 +371,11 @@ class ParticleEmitter(
         p.prevPosY = p.posY
         p.prevPosZ = p.posZ
 
+        // Reuse particle vars map instead of toMutableMap() per-particle per-tick
+        reusableParticleVars.clear()
+        reusableParticleVars.putAll(emitterVars)
         val vars = ParticleMoLang.addParticleVars(
-            emitterVars.toMutableMap(),
+            reusableParticleVars,
             p.age, p.lifetime, p.random1, p.random2, p.random3, p.random4
         )
 

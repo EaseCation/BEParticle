@@ -20,6 +20,13 @@ object ParticleManager {
     /** Max render distance in blocks */
     var maxRenderDistance: Float = 64f
 
+    /** Enable distance-based tick LOD for emitters */
+    var particleTickLodEnabled: Boolean = true
+    /** Emitters closer than this tick every frame (20 TPS) */
+    var particleTickLodNearDistance: Float = 24f
+    /** Emitters farther than this tick every 4th frame (5 TPS) */
+    var particleTickLodFarDistance: Float = 48f
+
     private val definitions = mutableMapOf<String, ParticleDefinition>()
     private val emitters = mutableListOf<ParticleEmitter>()
     private var tickCount = 0L
@@ -91,6 +98,7 @@ object ParticleManager {
 
     /**
      * Tick all active emitters. Called once per client tick (20 tps).
+     * Distance-based LOD: far emitters tick less frequently.
      */
     fun tick() {
         tickCount++
@@ -101,6 +109,13 @@ object ParticleManager {
             BedrockParticleLib.logger.info("[Particle:L6] tick#{}: {} emitters, {} total particles", tickCount, emitters.size, totalParticles)
         }
 
+        val player = MinecraftClient.getInstance().player
+        val camX = player?.x ?: 0.0
+        val camY = player?.y ?: 0.0
+        val camZ = player?.z ?: 0.0
+        val nearDistSq = (particleTickLodNearDistance * particleTickLodNearDistance).toDouble()
+        val farDistSq = (particleTickLodFarDistance * particleTickLodFarDistance).toDouble()
+
         val iterator = emitters.iterator()
         while (iterator.hasNext()) {
             val emitter = iterator.next()
@@ -108,6 +123,25 @@ object ParticleManager {
                 iterator.remove()
                 continue
             }
+
+            // Distance-based tick LOD
+            if (particleTickLodEnabled && player != null) {
+                val dx = emitter.position.x - camX
+                val dy = emitter.position.y - camY
+                val dz = emitter.position.z - camZ
+                val distSq = dx * dx + dy * dy + dz * dz
+
+                val tickInterval = when {
+                    distSq > farDistSq -> 4L   // >far: tick at 5 TPS
+                    distSq > nearDistSq -> 2L  // >near: tick at 10 TPS
+                    else -> 1L                  // close: tick at 20 TPS
+                }
+
+                if (tickInterval > 1 && tickCount % tickInterval != 0L) {
+                    continue
+                }
+            }
+
             emitter.tick(overSoftLimit)
         }
 
@@ -145,8 +179,9 @@ object ParticleManager {
 
     /**
      * Get all active emitters for rendering.
+     * Returns a direct reference — callers must not modify the list.
      */
-    fun getEmitters(): List<ParticleEmitter> = ArrayList(emitters)
+    fun getEmitters(): List<ParticleEmitter> = emitters
 
     /**
      * Get total particle count across all emitters.
