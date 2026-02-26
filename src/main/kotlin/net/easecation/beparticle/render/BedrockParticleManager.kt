@@ -25,8 +25,8 @@ object BedrockParticleManager {
 
     private fun getDummySprite(): Sprite {
         return dummySprite ?: run {
-            val atlasManager = MinecraftClient.getInstance().atlasManager
-            val atlas = atlasManager.getAtlasTexture(SpriteAtlasTexture.PARTICLE_ATLAS_TEXTURE)
+            val textureManager = MinecraftClient.getInstance().textureManager
+            val atlas = textureManager.getTexture(SpriteAtlasTexture.PARTICLE_ATLAS_TEXTURE) as SpriteAtlasTexture
             val sprite = atlas.getMissingSprite()
             dummySprite = sprite
             sprite
